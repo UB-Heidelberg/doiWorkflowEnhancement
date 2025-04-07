@@ -23,6 +23,18 @@ class DoiWorkflowEnhancementPlugin extends GenericPlugin
 	private const PAGE_HANDLER = 'doiworkflow';
     private string $doiWorkflowUrl = '';
 
+    /** @var string Name of the application */
+    public string $application;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->application = Application::get()->getName();
+    }
+
     /**
 	 * @copydoc Plugin::getDisplayName()
 	 */

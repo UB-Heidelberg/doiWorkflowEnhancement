@@ -9,6 +9,7 @@ namespace APP\plugins\generic\doiWorkflowEnhancement\pages;
 use APP\core\Request;
 use APP\facades\Repo;
 use APP\handler\Handler;
+use APP\journal\JournalDAO;
 use APP\monograph\ChapterDAO;
 use APP\plugins\generic\doiWorkflowEnhancement\DoiWorkflowEnhancementPlugin;
 use APP\publicationFormat\PublicationFormatDAO;
@@ -78,7 +79,7 @@ class DoiWorkflowEnhancementHandler extends Handler
         $submissionId = (int) $userVars['id'];
         $uid = $userVars['uid'];
         $uid = explode('-', $uid);
-        if (empty($doiPrefix) || count($uid) !== 3 || (int) $uid[0] !== $submissionId) {
+        if (empty($doiPrefix) || count($uid) < 2 || (int) $uid[0] !== $submissionId) {
             $request->getDispatcher()->handle404();
         }
 
@@ -93,11 +94,27 @@ class DoiWorkflowEnhancementHandler extends Handler
         }
 
         $contentType = $uid[1];
-        $contentId = (int) $uid[2];
+        if (array_key_exists(2, $uid)) {
+            $contentId = (int) $uid[2];
+        } elseif ( $contentType === 'issue' ) {
+            $contentId = null;
+        } else {
+            $request->getDispatcher()->handle404();
+        }
+
         $doiCreationFailures = [];
         $doiId = '';
 
         switch ($contentType) {
+            case 'issue':
+                $issue = Repo::issue()->get($submissionId);
+                if ($issue !== null
+                    && empty($issue->getData('doiId'))
+                    && $context->isDoiTypeEnabled(Repo::doi()::TYPE_ISSUE)) {
+                    $doiCreationFailures = Repo::issue()->createDoi($issue);
+                }
+                break;
+            case 'article':
             case 'monograph':
                 if (empty($publication->getData('doiId'))
                     && $context->isDoiTypeEnabled(Repo::doi()::TYPE_PUBLICATION)) {
@@ -128,13 +145,14 @@ class DoiWorkflowEnhancementHandler extends Handler
                         }
                 }
                 break;
-            case 'representation': // Publication format
-                /** @var PublicationFormatDAO $publicationFormatDao */
-                $publicationFormatDao = DAORegistry::getDAO('PublicationFormatDAO');
-                $publicationFormat = $publicationFormatDao->getByBestId($contentId, $publication->getId() );
-                if ($publicationFormat !== null
-                    && empty($publicationFormat->getData('doiId'))
-                    && $context->isDoiTypeEnabled(Repo::doi()::TYPE_REPRESENTATION)) {
+            case 'representation': // Publication format || Galley
+                if ($plugin->application === 'omp') {
+                    /** @var PublicationFormatDAO $publicationFormatDao */
+                    $publicationFormatDao = DAORegistry::getDAO('PublicationFormatDAO');
+                    $publicationFormat = $publicationFormatDao->getByBestId($contentId, $publication->getId());
+                    if ($publicationFormat !== null
+                        && empty($publicationFormat->getData('doiId'))
+                        && $context->isDoiTypeEnabled(Repo::doi()::TYPE_REPRESENTATION)) {
                         try {
                             $doiId = Repo::doi()->mintPublicationFormatDoi($publicationFormat, $submission, $context);
                             $publicationFormat->setData('doiId', $doiId);
@@ -142,6 +160,19 @@ class DoiWorkflowEnhancementHandler extends Handler
                         } catch (DoiException $exception) {
                             $doiCreationFailures[] = $exception;
                         }
+                    }
+                } elseif ($plugin->application === 'ojs2') {
+                    $galley = Repo::galley()->getByBestId($contentId, $publication->getId());
+                    if ($galley !== null
+                        && empty($galley->getData('doiId'))
+                        && $context->isDoiTypeEnabled(Repo::doi()::TYPE_REPRESENTATION)) {
+                        try {
+                            $doiId = Repo::doi()->mintGalleyDoi($galley, $publication, $submission, $context);
+                            Repo::galley()->edit($galley, ['doiId' => $doiId]);
+                        } catch (DoiException $exception) {
+                            $doiCreationFailures[] = $exception;
+                        }
+                    }
                 }
                 break;
             case 'file': // Submission file
