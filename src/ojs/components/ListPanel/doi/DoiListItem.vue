@@ -87,7 +87,7 @@
 					</table-cell>
 					<table-cell :column="doiListColumns[2]" :row="row">
 						<pkp-button
-							v-show="!isEditingDois && !(mutableDois.find((doi) => doi.uid === row.uid).identifier) && (enabledDoiTypes.find((el) => row.uid.includes(el)) || row.uid.includes('monograph'))"
+							v-show="!isEditingDois && !(mutableDois.find((doi) => doi.uid === row.uid).identifier) && (enabledDoiTypes.find((el) => row.uid.includes(el)) || row.uid.includes('monograph') || row.uid.includes('article'))"
 							:id="row.uid + '-assign'"
 							@click="assignDoi(row.uid)">
 							{{ __('plugins.generic.doiWorkflowEnhancement.button.assignDoi') }}
@@ -257,7 +257,7 @@
 						</table-cell>
 						<table-cell :column="doiListColumns[2]" :row="row">
 							<pkp-button
-								v-show="!isEditingDois && !(mutableDois.find((doi) => doi.uid === row.uid).identifier) && (enabledDoiTypes.find((el) => row.uid.includes(el)) || row.uid.includes('monograph'))"
+                v-show="!isEditingDois && !(mutableDois.find((doi) => doi.uid === row.uid).identifier) && (enabledDoiTypes.find((el) => row.uid.includes(el)) || row.uid.includes('monograph') || row.uid.includes('article'))"
 								:id="row.uid + '-assign'"
 								@click="assignDoi(row.uid)">
 								{{ __('plugins.generic.doiWorkflowEnhancement.button.assignDoi') }}

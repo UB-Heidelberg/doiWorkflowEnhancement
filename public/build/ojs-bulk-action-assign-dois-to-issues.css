@@ -1,0 +1,4 @@
+/** OJS Issues Tab**/
+#issue-doi-management .doiListPanel__bulkActions .pkpDropdown__section:nth-child(2) li:nth-child(4) {
+	display: none;
+}

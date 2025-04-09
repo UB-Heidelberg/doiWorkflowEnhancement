@@ -127,24 +127,41 @@ class DoiWorkflowEnhancementPlugin extends GenericPlugin
             Hook::add('LoadHandler', $this->setPageHandler(...));
 
             $templateMgr = TemplateManager::getManager($request);
-            if (!$this->showButtonAssignDOIs()) {
-                $this->addCSS($request, $templateMgr);
-            }
+            $this->addCSS($request, $templateMgr);
 		}
 		return $success;
 	}
 
     public function addCSS($request, $templateMgr): void
     {
-        $cssPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->getPluginPath() . DIRECTORY_SEPARATOR . 'public/build/style.css';
-        $templateMgr->addStyleSheet(
-            'DoiWorkflowEnhancementStyles',
-            $cssPath,
-            [
-                'contexts' => 'backend',
-                'priority' => PKPTemplateManager::STYLE_SEQUENCE_CORE,
-            ]
-        );
+        $cssPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->getPluginPath() . DIRECTORY_SEPARATOR . 'public/build/';
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $settings = [];
+        if ($this->application === 'omp') {
+            $settings = [
+                ['assignDOIs', 'omp-bulk-action-assign-dois.css'],
+            ];
+        } elseif ($this->application === 'ojs2') {
+            $settings = [
+                ['assignArticleDOIs', 'ojs-bulk-action-assign-dois-to-articles.css'],
+                ['assignIssueDOIs', 'ojs-bulk-action-assign-dois-to-issues.css'],
+            ];
+        }
+
+        foreach ($settings as $setting) {
+            $value = $this->getSetting($context->getId(), $setting[0]);
+            if (!$value) {
+                $templateMgr->addStyleSheet(
+                    'DoiWorkflowEnhancementStyles' . $setting[0],
+                    $cssPath . $setting[1],
+                    [
+                        'contexts' => 'backend',
+                        'priority' => PKPTemplateManager::STYLE_SEQUENCE_CORE,
+                    ]
+                );
+            }
+        }
     }
 
     public function callbackDoiListPanelConfig(string $hookName, array $params): bool
@@ -166,25 +183,11 @@ class DoiWorkflowEnhancementPlugin extends GenericPlugin
 
     public function callbackDoiListPanelArgs(string $hookName, array $params): bool
     {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-
         /** @var array $config */
         $commonArgs =& $params[0];
         $commonArgs['doiWorkflowEnhancementPluginUrl'] = $this->doiWorkflowUrl;
 
         return Hook::CONTINUE;
-    }
-
-    /**
-     * Get setting for bulk action assign DOIs
-     */
-    public function showButtonAssignDOIs(): bool
-    {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-        $assignDois = $this->getSetting($context->getId(), 'assignDOIs');
-        return $assignDois ? (bool) $assignDois : false;
     }
 
     /**

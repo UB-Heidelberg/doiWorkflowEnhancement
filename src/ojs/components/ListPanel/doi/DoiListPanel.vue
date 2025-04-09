@@ -175,6 +175,7 @@
 							:item="item"
 							:api-url="apiUrl"
 							:doi-api-url="doiApiUrl"
+							:doi-workflow-enhancement-plugin-url="doiWorkflowEnhancementPluginUrl"
 							:doi-prefix="doiPrefix"
 							:is-selected="selected.includes(item.id)"
 							:is-expanded="expanded.includes(item.id)"

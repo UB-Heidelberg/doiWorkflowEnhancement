@@ -9,7 +9,6 @@ namespace APP\plugins\generic\doiWorkflowEnhancement\pages;
 use APP\core\Request;
 use APP\facades\Repo;
 use APP\handler\Handler;
-use APP\journal\JournalDAO;
 use APP\monograph\ChapterDAO;
 use APP\plugins\generic\doiWorkflowEnhancement\DoiWorkflowEnhancementPlugin;
 use APP\publicationFormat\PublicationFormatDAO;
@@ -64,14 +63,12 @@ class DoiWorkflowEnhancementHandler extends Handler
     public function ajax(array $args, PKPRequest $request): JSONMessage|null
     {
         $userVars = $request->getUserVars();
-        $user = $request->getUser();
         $context = $request->getContext();
         $plugin = $this->plugin;
 
         if (empty($userVars['id'])
             || empty($userVars['uid'])
-            || !$context
-            || null === $plugin) {
+            || !$context) {
             $request->getDispatcher()->handle404();
         }
 
@@ -112,6 +109,12 @@ class DoiWorkflowEnhancementHandler extends Handler
                     && empty($issue->getData('doiId'))
                     && $context->isDoiTypeEnabled(Repo::doi()::TYPE_ISSUE)) {
                     $doiCreationFailures = Repo::issue()->createDoi($issue);
+                    try {
+                        $doiId = Repo::doi()->mintIssueDoi($issue, $context);
+                        Repo::issue()->edit($issue, ['doiId' => $doiId]);
+                    } catch (DoiException $exception) {
+                        $doiCreationFailures[] = $exception;
+                    }
                 }
                 break;
             case 'article':
@@ -162,7 +165,8 @@ class DoiWorkflowEnhancementHandler extends Handler
                         }
                     }
                 } elseif ($plugin->application === 'ojs2') {
-                    $galley = Repo::galley()->getByBestId($contentId, $publication->getId());
+
+                    $galley = Repo::galley()->getByBestId($contentId, $publication);
                     if ($galley !== null
                         && empty($galley->getData('doiId'))
                         && $context->isDoiTypeEnabled(Repo::doi()::TYPE_REPRESENTATION)) {

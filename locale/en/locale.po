@@ -29,3 +29,9 @@ msgstr "Select which optional bulk action you'd like to enable."
 msgid "plugins.generic.doiWorkflowEnhancement.settings.label.assignDOIs"
 msgstr "Assign DOIs"
 
+msgid "plugins.generic.doiWorkflowEnhancement.settings.label.assignArticleDOIs"
+msgstr "Articles - Assign DOIs"
+
+msgid "plugins.generic.doiWorkflowEnhancement.settings.label.assignIssueDOIs"
+msgstr "Issues - Assign DOIs"
+

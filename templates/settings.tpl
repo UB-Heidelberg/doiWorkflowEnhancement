@@ -14,9 +14,16 @@
 	{fbvFormArea id="doiWorkflowEnhancementSettings"}
 		{fbvFormSection list=true title="plugins.generic.doiWorkflowEnhancement.settings.title.bulkActions"}
 			<p>{translate key="plugins.generic.doiWorkflowEnhancement.settings.title.bulkActionsDescription"}</p>
-			{fbvFormSection list=true}
-				{fbvElement type="checkbox" id="assignDOIs" value="1" checked=$assignDOIs label="plugins.generic.doiWorkflowEnhancement.settings.label.assignDOIs"}
-			{/fbvFormSection}
+			{if $application === 'omp'}
+				{fbvFormSection list=true}
+					{fbvElement type="checkbox" id="assignDOIs" value="1" checked=$assignDOIs label="plugins.generic.doiWorkflowEnhancement.settings.label.assignDOIs"}
+				{/fbvFormSection}
+			{elseif $application === 'ojs2'}
+				{fbvFormSection list=true}
+					{fbvElement type="checkbox" id="assignArticleDOIs" value="1" checked=$assignArticleDOIs label="plugins.generic.doiWorkflowEnhancement.settings.label.assignArticleDOIs"}
+					{fbvElement type="checkbox" id="assignIssueDOIs" value="1" checked=$assignIssueDOIs label="plugins.generic.doiWorkflowEnhancement.settings.label.assignIssueDOIs"}
+				{/fbvFormSection}
+			{/if}
 		{/fbvFormSection}
 	{/fbvFormArea}
 	{fbvFormButtons}

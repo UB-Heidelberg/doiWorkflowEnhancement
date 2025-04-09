@@ -28,3 +28,9 @@ msgstr "Wähle welche Bulk Aktion verfügbar sein soll."
 
 msgid "plugins.generic.doiWorkflowEnhancement.settings.label.assignDOIs"
 msgstr "DOIs zuweisen"
+
+msgid "plugins.generic.doiWorkflowEnhancement.settings.label.assignArticleDOIs"
+msgstr "Artikel - DOIs zuweisen"
+
+msgid "plugins.generic.doiWorkflowEnhancement.settings.label.assignIssueDOIs"
+msgstr "Ausgaben - DOIs zuweisen"
