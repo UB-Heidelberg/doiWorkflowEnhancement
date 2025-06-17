@@ -66,7 +66,14 @@
 			v-if="isExpanded"
 			class="listPanel__itemExpanded listPanel__itemExpanded--doi"
 		>
-			<pkp-table :columns="doiListColumns" :rows="currentVersionDoiObjects">
+			<pkp-table
+				:columns="
+					doiWorkflowEnhancementPluginUrl
+						? doiListColumns
+						: [doiListColumns[0], doiListColumns[1]]
+				"
+				:rows="currentVersionDoiObjects"
+			>
 				<template slot-scope="{row}">
 					<table-cell :column="doiListColumns[0]" :row="row">
 						<label :for="row.uid" v-bind:class="{labelDisabled: row.disabled}">
@@ -85,9 +92,16 @@
 							"
 						/>
 					</table-cell>
-					<table-cell :column="doiListColumns[2]" :row="row">
+					<table-cell
+						v-if="doiWorkflowEnhancementPluginUrl"
+						:column="doiListColumns[2]"
+						:row="row"
+					>
 						<pkp-button
-							v-show="!isEditingDois && !(mutableDois.find((doi) => doi.uid === row.uid).identifier) && (enabledDoiTypes.find((el) => row.uid.includes(el)) || row.uid.includes('monograph') || row.uid.includes('article'))"
+							v-show="
+								!isEditingDois &&
+								!mutableDois.find((doi) => doi.uid === row.uid).identifier
+							"
 							:id="row.uid + '-assign'"
 							@click="assignDoi(row.uid)">
 							{{ __('plugins.generic.doiWorkflowEnhancement.button.assignDoi') }}
@@ -227,7 +241,11 @@
 					{{ getVersionHeader(version) }}
 				</a>
 				<pkp-table
-					:columns="doiListColumns"
+					:columns="
+						doiWorkflowEnhancementPluginUrl
+							? doiListColumns
+							: [doiListColumns[0], doiListColumns[1]]
+					"
 					:rows="
 						item.doiObjects.filter(
 							(doiObject) => doiObject.versionNumber === version.versionNumber
@@ -255,9 +273,16 @@
 								"
 							/>
 						</table-cell>
-						<table-cell :column="doiListColumns[2]" :row="row">
+						<table-cell
+							v-if="doiWorkflowEnhancementPluginUrl"
+							:column="doiListColumns[2]"
+							:row="row"
+						>
 							<pkp-button
-                v-show="!isEditingDois && !(mutableDois.find((doi) => doi.uid === row.uid).identifier) && (enabledDoiTypes.find((el) => row.uid.includes(el)) || row.uid.includes('monograph') || row.uid.includes('article'))"
+								v-show="
+									!isEditingDois &&
+									!mutableDois.find((doi) => doi.uid === row.uid).identifier
+								"
 								:id="row.uid + '-assign'"
 								@click="assignDoi(row.uid)">
 								{{ __('plugins.generic.doiWorkflowEnhancement.button.assignDoi') }}
